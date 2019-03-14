@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">HackerNews</string>
+    <string name="title_action_bar_main">Hacker News</string>
+    <string name="title_action_bar_favorite">Favorite</string>
+</resources>
