@@ -2,4 +2,7 @@
     <string name="app_name">HackerNews</string>
     <string name="title_action_bar_main">Hacker News</string>
     <string name="title_action_bar_favorite">Favorite</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
