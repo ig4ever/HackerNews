@@ -1,9 +1,6 @@
 package com.rakhmat.hackernews.Model;
 
-import com.google.gson.annotations.SerializedName;
-
 public class News {
-    @SerializedName("")
     private String idNews;
     private String titleNews;
     private String author;

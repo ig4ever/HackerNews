@@ -22,6 +22,7 @@ import com.google.gson.JsonObject;
 import com.rakhmat.hackernews.Adapter.TopNewsAdapter;
 import com.rakhmat.hackernews.Model.News;
 import com.rakhmat.hackernews.R;
+import com.rakhmat.hackernews.Realm.RealmController;
 import com.rakhmat.hackernews.SimpleDividerItems;
 
 import org.json.JSONArray;
@@ -31,6 +32,9 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
+
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
 
 public class MainActivity extends AppCompatActivity {
     private ProgressDialog pd;
@@ -46,12 +50,19 @@ public class MainActivity extends AppCompatActivity {
     private TopNewsAdapter topNewsAdapter;
     private int counter;
     private int totalPerPage;
+    private RealmController realmController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         context = this;
+
+        //Realm Setup
+        Realm.init(context);
+        RealmConfiguration configuration = new RealmConfiguration.Builder().build();
+        Realm realm = Realm.getInstance(configuration);
+        realmController = new RealmController(realm);
 
         recyclerView = findViewById(R.id.rv_top_news);
         recyclerView.addItemDecoration(new SimpleDividerItems(this));
@@ -74,25 +85,16 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (pd.isShowing()){
-                    pd.dismiss();
-                }
-            }
-        }, 2000);
+        pd = new ProgressDialog(MainActivity.this);
+        pd.setMessage("Please wait");
+        pd.setCancelable(false);
+        pd.show();
 
-        totalPerPage = 10; //total item per page
+        totalPerPage = 20; //total item per page
 
         try {
             String jsonString = new GetJson().AsString("https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty");
             JSONArray jsonArray = new JSONArray(jsonString);
-
-            pd = new ProgressDialog(MainActivity.this);
-            pd.setMessage("Please wait");
-            pd.setCancelable(false);
-            pd.show();
 
             for (int i = 0; i < totalPerPage; i++){
                 JsonObject jsonObject = new GetJson().AsJSONObject("https://hacker-news.firebaseio.com/v0/item/" + jsonArray.getString(i) + ".json?print=pretty");
@@ -109,8 +111,17 @@ public class MainActivity extends AppCompatActivity {
                 counter += 1;
             }
 
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (pd.isShowing()){
+                        pd.dismiss();
+                    }
+                }
+            }, 2000);
+
             recyclerView.setLayoutManager(linearLayoutManager);
-            topNewsAdapter = new TopNewsAdapter(newsList);
+            topNewsAdapter = new TopNewsAdapter(newsList, realmController);
             recyclerView.setAdapter(topNewsAdapter);
         } catch (ExecutionException e) {
             e.printStackTrace();
